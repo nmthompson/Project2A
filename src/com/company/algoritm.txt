@@ -1,0 +1,16 @@
+if char to be read
+	if char is operand or (
+		push onto operand stack
+	else if char is operator
+		if operator is higher precedence
+			push onto operator stack
+		else if char is smaller precedence
+			while opertor is smaller
+				pop top from operator stack
+				pop 2 operand stack
+				push result onto operand stack
+		else if char is )
+			 while opertor is smaller
+				pop top from operator stack
+				pop 2 operand stack
+				push result onto operand stack
