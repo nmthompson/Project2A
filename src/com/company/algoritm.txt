@@ -24,3 +24,5 @@ Possible Bugs:
 	Every time it adds to an operator it should be set to zero.
 	So now 3+++1 will add 3 + modifer to the operand stack and reset modifer to 0, see ++ and increment the modifier, see a + and add it the operator stack, add 1 + modifer to the operand stack and reset modifer to 0.
 	(NOTE: everytime you have a incrmenter or decrementer you need to move your index up an extra time because it would see ++++2 as 3 incrementers)
+
+2. When you encounter a '(' on the operand side we can just pop it off as trash, when we reach it we will have already evaluated its contents.
