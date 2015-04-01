@@ -1,6 +1,7 @@
 #include <sstream>
 #include <iostream>
 #include "evaluator.h"
+#include "error.h"
 
 //Function for power operation ^, because neither ** operator nor pow(base, power) method in math.h is working
 int power(int base, int n){
@@ -32,8 +33,12 @@ const string Eval::bool_operators = "||&&!==";
 string Eval::evaluate(string math){ //All spaces should be removed from the string beforehand (in exception handler func)
 	string result;
 	string math_str;
+	Error error; //create instance of error
     for(size_t i=0; i<math.length(); i++){
+		error.errorCheck(math, i); //call to error class to perform error checks within loop
+
 		//Check for operators with 2 chars
+		
 		if (i != math.length()-1){ //i can't be the last index in expression
 			if ((math[i] == math[i+1]) || (math[i] == '>' && math[i+1] == '=') || (math[i] == '<' && math[i+1] == '=')){
 				math_str = convert_str(math[i]) + convert_str(math[i+1]);
