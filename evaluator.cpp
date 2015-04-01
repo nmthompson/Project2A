@@ -117,7 +117,14 @@ int Eval::int_operation(int rhs, int lhs, string op){
 	else if (op == "*")
 		return lhs * rhs;
 	else if (op == "/")
+	{
+		if (rhs == 0)
+		{
+			cout << "Divide by Zero Error @ ";
+			return NULL;
+		}
 		return static_cast<int>(lhs / rhs);
+	}
 	else if (op == "%")
 		return lhs % rhs;
 	else if (op == "^")
