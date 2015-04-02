@@ -1,3 +1,5 @@
+#include "error.h"
+
 bool Error::check()
 {
 	// Checking the first char

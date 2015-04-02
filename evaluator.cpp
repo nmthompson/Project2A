@@ -33,10 +33,11 @@ const string Eval::bool_operators = "||&&!==";
 string Eval::evaluate(string math){ //All spaces should be removed from the string beforehand (in exception handler func)
 	string result;
 	string math_str;
-	Error error; //create instance of error
+	Error error(math); //create instance of error
+	if (error.check())
+		return NULL;
     for(size_t i=0; i<math.length(); i++){
-		error.errorCheck(math, i); //call to error class to perform error checks within loop
-
+		
 		//Check for operators with 2 chars
 		
 		if (i != math.length()-1){ //i can't be the last index in expression
@@ -233,6 +234,11 @@ void Eval::eval_op(string result){ //Inside the main while loops of eval
 	}
 }
 
+bool Eval::is_unary(const string math, int i)
+{
+	if ((math[i] == '+' && math[i + 1] == '+') || (math[i] == '-' && math[i + 1] == '-'))
+		return true;
+}
 
 /* NOTE 1
 

@@ -15,6 +15,7 @@ bool comp_operation(int rhs, int lhs, string op);
 bool bool_operation(bool rhs, bool lhs, string op);
 bool bool_operation(bool the_bool, string op); //Overloading function
 bool is_operand(const string ch);
+bool is_unary(const string math, int index); 
 bool is_int_operator(const string ch);
 bool is_comp_operator(const string ch);
 bool is_bool_operator(const string ch);
