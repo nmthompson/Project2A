@@ -5,7 +5,7 @@
 int main(){
 	Eval eval;
 	string result = eval.evaluate("7+9");
-	std::cout << result;
+	cout << result << endl;
 	system("pause");
 	return 0;
 }
