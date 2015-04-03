@@ -1,5 +1,17 @@
 #include "error.h"
 #include "evaluator.h"
+const string operands = "(0123456789";
+bool Error::is_operand(char ch){
+	return operands.find(ch) != string::npos;
+}
+bool Error::is_unary(string math, int i)
+{
+	if (math[i] == math[i + 1])
+		return true;
+	else
+		return false;
+}
+
 bool Error::check(string math)
 {
 	// Checking the first char
@@ -8,13 +20,10 @@ bool Error::check(string math)
 		cout << "Expression can't start with a right bracket." << endl;
 		return true;
 	}
-	else if (is_unary(math, 0) == false && is_operand(math[0]))
+	else if ((is_unary(math, 0) == false && is_operand(math[0])) && math[0] != '-') //Element 0 allowed operators: '(' '-' "++" "--"
 	{
-		if (math[0] != '-')
-		{
 		cout << "Your expression starts with a binary operator." << endl;
 		return true;
-		}
 	}
 	else
 	{
