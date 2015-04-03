@@ -16,20 +16,13 @@ bool Parser::closing_paren(string exp)
 {
 	int open = 0;
 	int close = 0;
-	bool opened = false;
 
 	for (int i = 0; i < exp.size(); i++)
 	{
 		if (exp[i] == '(')
-		{
 			open++;
-			opened = true;
-		}
-		else if (exp[i] == ')' && opened)
-		{
+		else if (exp[i] == ')')
 			close++;
-			opened = false;
-		}
 	}
 	if (open == close)
 		return true;
