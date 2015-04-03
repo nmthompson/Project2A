@@ -1,16 +1,16 @@
 #include <sstream>
 #include <iostream>
 #include "evaluator.h"
-#include "error.h"
 
 //Function for power operation ^, because neither ** operator nor pow(base, power) method in math.h is working
 int power(int base, int n){
 	static int result = base;
 	if (n == 1) 
 		return result;
-	else
+	else{
 		result *= base;
 	    return power(base, n-1);
+	}
 }
 //Converts ints or chars to strings
 template<class T>
@@ -21,22 +21,28 @@ string convert_str(T ch){
 	ss >> s;
 	return s;
 }
-//Converts strings to bools
+//Converts string ints to bools
 bool convert_bool(string str){
 	if (str == "true")
 		return true;
 	else if (str == "false")
 		return false;
+	else
+		return true; 
 }
-//Converts string ints to bools
+//Converts char ints to bools
 string bool_str(char integer){
 	if (integer == '1')
 		return "true";
 	else if (integer == '0')
 		return "false";
+	else
+		return "true";
 }
 
-const string Eval::operands = "(0123456789truefalse";
+const string Eval::operands = "(0123456789";
+
+const string Eval::bool_operands = "truefalse";
 
 const string Eval::int_operators = "+-*/%^++--";
 
@@ -49,20 +55,31 @@ string Eval::evaluate(const string& math){ //All spaces should be removed from t
 	string math_str;
 	char next;
 	char temp;
+	char temp2;
 	istringstream tokens(math);
     while (tokens >> next){
-		//Check for operators with 2 chars
+		//Check for bool ints
 		if (next == '0' || next == '1'){ //Possible boolean int  
-			if ((char)tokens.peek() == '&' || (char)tokens.peek() == '=' || (char)tokens.peek() == '|') //If bool operator indicated at right
-		        math_str = bool_str(next);
+			if ((char)tokens.peek() == '&' || (char)tokens.peek() == '=' || (char)tokens.peek() == '|' || 
+				(char)tokens.peek() == '!'){ //If bool operator indicated at right
+				tokens >> temp >> temp2; //next char to be read is possibly the other bool operand 
+			    if (((char)tokens.peek() == '0' || (char)tokens.peek() == '1') && (temp2 == '&' || temp2 == '=' ||
+					temp2 == '|'))
+		            math_str = bool_str(next); //next char is bool int too
+				tokens.putback(temp);
+				tokens.putback(temp2);
+			}
 			else if (!s_operator.empty() &&  is_bool_operator(s_operator.top())) //If bool operator indicated at left
 				math_str = bool_str(next);
+			else
+			    math_str = convert_str(next); //this char is actually numeric int
 		}
+
 	    //Check for operators with 2 chars
-		if (tokens >> temp){ //next can't be the last char in expression
+		else if (!(isdigit(next)) && tokens >> temp){ //next can't be the last char in expression and shouldn't be a digit
 			tokens.putback(temp);
-			if (!(isdigit(next)) && (next == (char)tokens.peek() || next == '>' && (char)tokens.peek() == '=' 
-				|| next == '<' && (char)tokens.peek() == '=' || next == '!' && (char)tokens.peek() == '=')){
+			if (next == (char)tokens.peek() || next == '>' && (char)tokens.peek() == '=' 
+				|| next == '<' && (char)tokens.peek() == '=' || next == '!' && (char)tokens.peek() == '='){
 				math_str = next; 
 				tokens >> next; //Now next is the peek char
 				math_str += convert_str(next);
@@ -73,8 +90,8 @@ string Eval::evaluate(const string& math){ //All spaces should be removed from t
 		else
             math_str = convert_str(next);
 
-        if (is_operand(math_str)){ //If operand is a digit, there may be more digits to add to it
-			if (isdigit(next)){
+        if (is_operand(math_str) || is_bool_operand(math_str)){ 
+			if (isdigit(next)){ //If operand is a digit, there may be more digits to add to it
 				bool dig_read = true;
 				while (dig_read){ //While digits are being read 
 				    if (tokens >> temp && isdigit(temp)){//If there are more digits of the integer to be read
@@ -85,6 +102,12 @@ string Eval::evaluate(const string& math){ //All spaces should be removed from t
 						dig_read = false;
 					}
 				}
+				if (!(tokens >> temp) && (s_operator.empty() || s_operand.empty())){ //Int by itself is a "true" bool
+					math_str = bool_str(next);
+				    s_operand.push(math_str);
+			    }
+				else
+					tokens.putback(temp);
 			}
 	        s_operand.push(math_str);
 		}
@@ -93,7 +116,7 @@ string Eval::evaluate(const string& math){ //All spaces should be removed from t
 			while (s_operand.top() != "(" && !s_operator.empty())
 				eval_op(result);
 		}
-		else if (!s_operator.empty()){ //Make sure there is an operator in the stack to compare to
+		else if (!s_operator.empty() && s_operator.top() != "!"){ //Make sure there is an operator in the stack to compare to
 			if (precedence(math_str) >= precedence(s_operator.top()))
 			    s_operator.push(math_str);
 			else{
@@ -113,21 +136,21 @@ string Eval::evaluate(const string& math){ //All spaces should be removed from t
 	return result;
 }
 
-//See whether "true" or "false" is the result, push onto stack and return
-string Eval::tf_push(bool what){
-	if (what){
+//See whether "true" or "false" is the result, push onto stack 
+void Eval::tf_push(bool what){
+	if (what)
 	    s_operand.push("true");
-	    return "true";
-	}
-	else{
+	else
 		s_operand.push("false");
-	    return "false";
-	}
 }
 
 //See if the char is a numerical operand
 bool Eval::is_operand(const string ch){
 	return operands.find(ch) != string::npos;
+}
+
+bool Eval::is_bool_operand(const string str){
+	return bool_operands.find(str) != string::npos;
 }
 
 //See if the char is a numerical operator
@@ -227,9 +250,11 @@ int Eval::precedence(const string op){
 
 void Eval::eval_op(string result){ //Inside the main while loops of eval
 	string op;
+	string param;
 	int l_int, r_int;
 	bool l_bool, r_bool;
 	op = s_operator.top();
+	param = s_operand.top();
 	s_operator.pop();
     if (op == "++" || op == "--" || op == "!"){ //Pop off only 1 operand
 	    if (op == "++" || op == "--"){//Perform int operation with 1 operand
@@ -239,16 +264,13 @@ void Eval::eval_op(string result){ //Inside the main while loops of eval
 			s_operand.push(result); 
 		}
 		else{ // Perform ! operation with 1 operand
-		    if (s_operand.top() == "true")
-			    r_bool = true;
-				else{
-				    r_bool = false;
-					s_operand.pop();
-				    result = tf_push(bool_operation(r_bool, op));
-				}
+		    r_bool = convert_bool(param);
+			s_operand.pop();
+		    tf_push(bool_operation(r_bool, op));
 		}
 	}
-	else if (is_int_operator(op)){ //Operator is for 2 ints, returns int
+
+	else if (is_int_operator(op)){ //Operator is for 2 ints, pushes int onto operand stack
 	    r_int = stoi(s_operand.top());
 		s_operand.pop();
 		pop_paren(); //Danger, open parenth might be here, needs to be popped
@@ -257,20 +279,20 @@ void Eval::eval_op(string result){ //Inside the main while loops of eval
 		result = convert_str(int_operation(r_int, l_int, op)); 
 		s_operand.push(result);
 	}
-	else if (is_comp_operator(op)){//Operator is for 2 ints, returns bool
+	else if (is_comp_operator(op) && is_operand(param)){//Operator is for 2 ints, pushes bool onto operand stack
 	    r_int = stoi(s_operand.top());
 		s_operand.pop();
 		pop_paren();
 		l_int = stoi(s_operand.top());
 		s_operand.pop();
-		result = tf_push(comp_operation(r_int, l_int, op));
+		tf_push(comp_operation(r_int, l_int, op));
 	}
-	else if (is_bool_operator(op)){//Operator is for 2 bools, returns bool
+	else if (is_bool_operator(op) && is_bool_operand(param)){//Operator is for 2 bools, pushes bool onto operand stack
 	    r_bool = convert_bool(s_operand.top()); 
 		s_operand.pop();
 		pop_paren();
 		l_bool = convert_bool(s_operand.top());
 		s_operand.pop();
-		result = tf_push(bool_operation(r_bool, l_bool, op));
+		tf_push(bool_operation(r_bool, l_bool, op));
 	}
 }
