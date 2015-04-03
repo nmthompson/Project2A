@@ -1,14 +1,11 @@
 #include "parser.h"
 
-char Parser::parse_Exp(string exp){ //Handles parsing the string and passing tokens to eval class for evaluation
+int parse_Exp(string exp){ //Handles parsing the string and passing tokens to eval class for evaluation
 
-	for (int i = 0; i < exp.size(); i++)
-	{
-		
-	}
-	return exp[i];
+
+	return 0;
 }
-bool Parser::parse_ErrorCheck(){ //Checks for all errors that could occur while parsing
+bool parse_ErrorCheck(){ //Checks for all errors that could occur while parsing
 
 
 
