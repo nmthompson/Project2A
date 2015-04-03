@@ -21,8 +21,22 @@ string convert_str(T ch){
 	ss >> s;
 	return s;
 }
+//Converts strings to bools
+bool convert_bool(string str){
+	if (str == "true")
+		return true;
+	else if (str == "false")
+		return false;
+}
+//Converts string ints to bools
+string bool_str(char integer){
+	if (integer == '1')
+		return "true";
+	else if (integer == '0')
+		return "false";
+}
 
-const string Eval::operands = "0123456789";
+const string Eval::operands = "(0123456789truefalse";
 
 const string Eval::int_operators = "+-*/%^++--";
 
@@ -30,29 +44,52 @@ const string Eval::comp_operators = "<>==<=>=";
 
 const string Eval::bool_operators = "||&&!==";
 
-string Eval::evaluate(string math){ //All spaces should be removed from the string beforehand (in exception handler func)
+string Eval::evaluate(const string& math){ //All spaces should be removed from the string beforehand (in exception handler func)
 	string result;
 	string math_str;
-	Error error(math); //create instance of error
-	if (error.check())
-		return NULL;
-    for(size_t i=0; i<math.length(); i++){
-		
+	char next;
+	char temp;
+	istringstream tokens(math);
+    while (tokens >> next){
 		//Check for operators with 2 chars
-		
-		if (i != math.length()-1){ //i can't be the last index in expression
-			if ((math[i] == math[i+1]) || (math[i] == '>' && math[i+1] == '=') || (math[i] == '<' && math[i+1] == '=')){
-				math_str = convert_str(math[i]) + convert_str(math[i+1]);
-			    i++;
+		if (next == '0' || next == '1'){ //Possible boolean int  
+			if ((char)tokens.peek() == '&' || (char)tokens.peek() == '=' || (char)tokens.peek() == '|') //If bool operator indicated at right
+		        math_str = bool_str(next);
+			else if (!s_operator.empty() &&  is_bool_operator(s_operator.top())) //If bool operator indicated at left
+				math_str = bool_str(next);
+		}
+	    //Check for operators with 2 chars
+		if (tokens >> temp){ //next can't be the last char in expression
+			tokens.putback(temp);
+			if (!(isdigit(next)) && (next == (char)tokens.peek() || next == '>' && (char)tokens.peek() == '=' 
+				|| next == '<' && (char)tokens.peek() == '=' || next == '!' && (char)tokens.peek() == '=')){
+				math_str = next; 
+				tokens >> next; //Now next is the peek char
+				math_str += convert_str(next);
 			}
 			else
-				math_str = convert_str(math[i]);
+				math_str = convert_str(next);
 		}
 		else
-            math_str = convert_str(math[i]);
-        if(is_operand(math_str) || math_str == "(")  //NOTE 1
+            math_str = convert_str(next);
+
+        if (is_operand(math_str)){ //If operand is a digit, there may be more digits to add to it
+			if (isdigit(next)){
+				bool dig_read = true;
+				while (dig_read){ //While digits are being read 
+				    if (tokens >> temp && isdigit(temp)){//If there are more digits of the integer to be read
+					    math_str += temp; //Add next digit to math_str
+				    }
+					else{
+						tokens.putback(temp);
+						dig_read = false;
+					}
+				}
+			}
 	        s_operand.push(math_str);
-		else if (math_str == ")"){
+		}
+
+		else if (math_str == ")"){ //Closing parenthesis means operation(s) inside parentheses can be performed  
 			while (s_operand.top() != "(" && !s_operator.empty())
 				eval_op(result);
 		}
@@ -60,13 +97,12 @@ string Eval::evaluate(string math){ //All spaces should be removed from the stri
 			if (precedence(math_str) >= precedence(s_operator.top()))
 			    s_operator.push(math_str);
 			else{
-	            while(precedence(math_str) < precedence(s_operator.top())){
+	            while(!s_operator.empty() && precedence(math_str) < precedence(s_operator.top()))
 				    eval_op(result); 
-				}
 				s_operator.push(math_str);
 	        }
 		}
-        else //The operator has higher precedence than the one on top of the stack
+        else //operator stack empty
 	        s_operator.push(math_str);
 	}
 	//No characters left to read - finish any leftover operations
@@ -79,7 +115,7 @@ string Eval::evaluate(string math){ //All spaces should be removed from the stri
 
 //See whether "true" or "false" is the result, push onto stack and return
 string Eval::tf_push(bool what){
-	if (what == true){
+	if (what){
 	    s_operand.push("true");
 	    return "true";
 	}
@@ -118,14 +154,7 @@ int Eval::int_operation(int rhs, int lhs, string op){
 	else if (op == "*")
 		return lhs * rhs;
 	else if (op == "/")
-	{
-		if (rhs == 0)
-		{
-			cout << "Divide by Zero Error @ ";
-			return NULL;
-		}
 		return static_cast<int>(lhs / rhs);
-	}
 	else if (op == "%")
 		return lhs % rhs;
 	else if (op == "^")
@@ -152,6 +181,8 @@ bool Eval::comp_operation(int rhs, int lhs, string op){
 		return lhs >= rhs; 
 	else if (op == "==")
 		return rhs == lhs;
+	else if (op == "!=")
+		return rhs != lhs;
 }
 
 //Evaluate a boolean expression with bools
@@ -169,9 +200,16 @@ bool Eval::bool_operation(bool rhs, string op){
 	return !rhs;
 }
 
+void Eval::pop_paren(){ //Used for clearing out open parenth stuck between operands or at end 
+	if (s_operand.top() == "(")
+		s_operand.pop();
+	else
+		return;
+}
+
 //Precendence value for each operator
 int Eval::precedence(const string op){
-	if (op == "!" || op == "++" || op == "--" || op == "-")
+	if (op == "!" || op == "++" || op == "--")
 		return 8;
 	else if (op == "^")
 		return 7;
@@ -213,6 +251,7 @@ void Eval::eval_op(string result){ //Inside the main while loops of eval
 	else if (is_int_operator(op)){ //Operator is for 2 ints, returns int
 	    r_int = stoi(s_operand.top());
 		s_operand.pop();
+		pop_paren(); //Danger, open parenth might be here, needs to be popped
 		l_int = stoi(s_operand.top());
 		s_operand.pop();
 		result = convert_str(int_operation(r_int, l_int, op)); 
@@ -221,30 +260,17 @@ void Eval::eval_op(string result){ //Inside the main while loops of eval
 	else if (is_comp_operator(op)){//Operator is for 2 ints, returns bool
 	    r_int = stoi(s_operand.top());
 		s_operand.pop();
+		pop_paren();
 		l_int = stoi(s_operand.top());
 		s_operand.pop();
 		result = tf_push(comp_operation(r_int, l_int, op));
 	}
 	else if (is_bool_operator(op)){//Operator is for 2 bools, returns bool
-	    r_bool = stoi(s_operand.top()); 
+	    r_bool = convert_bool(s_operand.top()); 
 		s_operand.pop();
-		l_bool = stoi(s_operand.top());
+		pop_paren();
+		l_bool = convert_bool(s_operand.top());
 		s_operand.pop();
 		result = tf_push(bool_operation(r_bool, l_bool, op));
 	}
 }
-
-bool Eval::is_unary(const string math, int i)
-{
-	if ((math[i] == '+' && math[i + 1] == '+') || (math[i] == '-' && math[i + 1] == '-'))
-		return true;
-}
-
-/* NOTE 1
-
-I was thinking would it be easier to just use recursion to deal with parenthesis?
-Create a new string of the inside of the parenthesis and send it in its own eval function.
-
-Just something to think about....
-
-*/
