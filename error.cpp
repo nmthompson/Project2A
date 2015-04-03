@@ -1,6 +1,6 @@
 #include "error.h"
-
-bool Error::check()
+#include "evaluator.h"
+bool Error::check(string math)
 {
 	// Checking the first char
 	if (math[0] == ')')
@@ -21,15 +21,20 @@ bool Error::check()
 		//Checking the rest of the expression
 		for (int i = 0; i < math.size() - 1; i++)
 		{
-			if ((is_operand(math[i]) && is_operand(math[i + 1])) && is_unary(math,i) == false)
+			if (math[i] != ' ') //Skip spaces.
 			{
-				cout << "Two binary operands in a row @ " << i << endl;
-				return true;
-			}
-			if (is_unary(math,i) && is_operand(math[i+2]))
-			{
-				cout << "A unary operator cannot be followed by a binary operator. Error @ " << i << endl;
-				return true;
+
+				if ((is_operand(math[i]) && is_operand(math[i + 1])) && is_unary(math, i) == false)
+				{
+					cout << "Two binary operands in a row @ " << i << endl;
+					return true;
+				}
+				if (is_unary(math, i) && is_operand(math[i + 2]))
+				{
+					cout << "A unary operator cannot be followed by a binary operator. Error @ " << i << endl;
+					return true;
+				}
+
 			}
 		}
 	}

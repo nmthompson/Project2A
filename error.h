@@ -7,10 +7,9 @@ class Error
 {
 public:
 	Error(string exp);
-	bool check();
+	bool check(string math);
 
 private:
-	bool error_detected = false;
 	string math;
 };
 

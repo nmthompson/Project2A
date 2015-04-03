@@ -4,7 +4,7 @@
 
 int main(){
 	Eval eval;
-	int result = eval.evaluate("7-5>=2&&6*5<=30");
-
+	string result = eval.evaluate("7-5>=2&&6*5<=30");
+	
 	return 0;
 }
