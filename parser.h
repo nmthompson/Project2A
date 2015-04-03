@@ -5,9 +5,9 @@ using namespace std;
 
 class Parser{
 public:
-	int parse_Exp(string exp);
+	char parse_Exp(string exp);
 	bool parse_ErrorCheck();
-
+	bool closing_paren(string exp);
 private:
 	
 };
