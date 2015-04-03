@@ -1,5 +1,5 @@
 #include "error.h"
-#include "evaluator.h"
+
 const string operands = "(0123456789";
 bool Error::is_operand(char ch){
 	return operands.find(ch) != string::npos;

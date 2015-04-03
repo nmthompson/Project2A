@@ -1,6 +1,6 @@
-#include <string>
-#include <iostream>
-
+#pragma once
+#include<iostream>
+#include<string>
 using namespace std;
 
 class Error

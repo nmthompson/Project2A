@@ -1,7 +1,4 @@
-#include <sstream>
-#include <iostream>
-#include "evaluator.h"
-#include "error.h"
+#include"evaluator.h"
 
 //Function for power operation ^, because neither ** operator nor pow(base, power) method in math.h is working
 int power(int base, int n){
