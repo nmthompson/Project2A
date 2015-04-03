@@ -1,10 +1,12 @@
 #pragma once
 
 #include "evaluator.h"
+#include "parser.h"
 
 int main(){
 	Eval eval;
-	int result = eval.evaluate("7-5>=2&&6*5<=30");
+	Parser parse;
+	int result = parse.parse_Exp("7-5>=2&&6*5<=30");
 
 	return 0;
 }
