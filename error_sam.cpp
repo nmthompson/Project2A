@@ -11,7 +11,7 @@ bool Error::check(string math)
 	// Checking the first char(s)
 	if (!(is_operand(convert_str(next))) && (!(next == '+' || next == '-') && !((char)tokens.peek() == next) || next != '!')){ 
 		//Invalid beginning char error
-        cout << "Expression starts with an invalid character." << endl;
+        cout << "Expression starts with an invalid character" << endl;
 		system("pause");
 	    exit(1);
 	}
@@ -21,14 +21,11 @@ bool Error::check(string math)
 		while (tokens >> next)
 		{
 			temp = (char)tokens.peek();
-	        /*if ((is_operand(convert_str(next)) && is_operand(convert_str(temp)) && is_unary(math, i) == false){
-					cout << "Two binary operands in a row"<< endl;
-					return true;
+	        if ((next == '&' || next == '|' || next == '=') && (temp != next)){
+				cout << "This isn't a valid operator" << endl;
+			    system("pause");
+				exit(1);
 			}
-			if (is_unary(math, i) && is_operand(math[i + 2])){
-					cout << "A unary operator cannot be followed by a binary operator. " << endl;
-					return true;
-			}*/
 			if (next == '/' && temp == '0'){ //Division by 0
 				cout << "Division by 0 error @ char " << char_num << endl;
 				system("pause");
