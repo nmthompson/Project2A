@@ -1,50 +1,40 @@
-#include "error.h"
+#include "evaluator.h"
 
-const string operands = "(0123456789";
-bool Error::is_operand(char ch){
-	return operands.find(ch) != string::npos;
-}
-bool Error::is_unary(string math, int i)
+bool Error::check(string math) 
 {
-	if (math[i] == math[i + 1])
-		return true;
-	else
-		return false;
-}
-
-bool Error::check(string math)
-{
-	// Checking the first char
-	if (math[0] == ')')
-	{
-		cout << "Expression can't start with a right bracket." << endl;
-		return true;
+	istringstream tokens(math);
+	char next;
+	char temp;
+	char temp2;
+	int char_num = 1;
+	tokens >> next;
+	// Checking the first char(s)
+	if (!(is_operand(convert_str(next))) && (!(next == '+' || next == '-') && !((char)tokens.peek() == next) || next != '!')){ 
+		//Invalid beginning char error
+        cout << "Expression starts with an invalid character." << endl;
+		system("pause");
+	    exit(1);
 	}
-	else if ((is_unary(math, 0) == false && is_operand(math[0])) && math[0] != '-') //Element 0 allowed operators: '(' '-' "++" "--"
-	{
-		cout << "Your expression starts with a binary operator." << endl;
-		return true;
-	}
-	else
-	{
+	else{
+		tokens.putback(next);
 		//Checking the rest of the expression
-		for (int i = 0; i < math.size() - 1; i++)
+		while (tokens >> next)
 		{
-			if (math[i] != ' ') //Skip spaces.
-			{
-
-				if ((is_operand(math[i]) && is_operand(math[i + 1])) && is_unary(math, i) == false)
-				{
-					cout << "Two binary operands in a row @ " << i << endl;
+			temp = (char)tokens.peek();
+	        /*if ((is_operand(convert_str(next)) && is_operand(convert_str(temp)) && is_unary(math, i) == false){
+					cout << "Two binary operands in a row"<< endl;
 					return true;
-				}
-				if (is_unary(math, i) && is_operand(math[i + 2]))
-				{
-					cout << "A unary operator cannot be followed by a binary operator. Error @ " << i << endl;
-					return true;
-				}
-
 			}
+			if (is_unary(math, i) && is_operand(math[i + 2])){
+					cout << "A unary operator cannot be followed by a binary operator. " << endl;
+					return true;
+			}*/
+			if (next == '/' && temp == '0'){ //Division by 0
+				cout << "Division by 0 error @ char " << char_num << endl;
+				system("pause");
+			    exit(1);
+			}
+		char_num++;
 		}
 	}
 	return false;
