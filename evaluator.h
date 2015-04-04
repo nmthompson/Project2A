@@ -1,7 +1,8 @@
 #pragma once
 #include<sstream>
 #include<stack>
-#include "error.h"
+#include<string>
+using namespace std;
 class Eval
 {
 public:

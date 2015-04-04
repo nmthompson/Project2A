@@ -51,9 +51,6 @@ const string Eval::bool_operators = "||&&!==";
 string Eval::evaluate(const string& math){ //All spaces should be removed from the string beforehand (in exception handler func)
 	string result;
 	string math_str;
-	Error error(math);
-	if (error.check(math))
-		return 0;
 	char next;
 	char temp;
 	char temp2;
