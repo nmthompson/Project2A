@@ -134,7 +134,9 @@ string Eval::evaluate(const string& math){ //All spaces should be removed from t
 	while (!s_operator.empty() && !s_operand.empty())
 		eval_op(result);
 	result = s_operand.top();
-	s_operand.pop();//Pop result - an open parentheses might be left on the stack 
+	s_operand.pop();//Pop result  
+	while (!s_operand.empty())
+		pop_paren();//Pop any remaining open parentheses
 	return result;
 	}
 }
