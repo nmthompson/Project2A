@@ -1,4 +1,4 @@
-#include"evaluator.h"
+#include "evaluator.h"
 
 //Function for power operation ^, because neither ** operator nor pow(base, power) method in math.h is working
 int power(int base, int n){
@@ -10,15 +10,7 @@ int power(int base, int n){
 	    return power(base, n-1);
 	}
 }
-//Converts ints or chars to strings
-template<class T>
-string convert_str(T ch){
-	stringstream ss;
-	string s;
-	ss << ch;
-	ss >> s;
-	return s;
-}
+
 //Converts string ints to bools
 bool convert_bool(string str){
 	if (str == "true")
@@ -38,6 +30,16 @@ string bool_str(char integer){
 		return "true";
 }
 
+template<class T>
+string Eval::convert_str(T ch)
+{
+	stringstream ss;
+	string s;
+	ss << ch;
+	ss >> s;
+	return s;
+}
+
 const string Eval::operands = "(0123456789";
 
 const string Eval::bool_operands = "truefalse";
@@ -49,6 +51,8 @@ const string Eval::comp_operators = "<>==<=>=";
 const string Eval::bool_operators = "||&&!==";
 
 string Eval::evaluate(const string& math){ //All spaces should be removed from the string beforehand (in exception handler func)
+	Error error(math);
+	if (!(error.check(math))){ //If no errors, evaluate expression
 	string result;
 	string math_str;
 	char next;
@@ -132,6 +136,7 @@ string Eval::evaluate(const string& math){ //All spaces should be removed from t
 	result = s_operand.top();
 	s_operand.pop();//Pop result - an open parentheses might be left on the stack 
 	return result;
+	}
 }
 
 //See whether "true" or "false" is the result, push onto stack 

@@ -1,11 +1,8 @@
 #include "evaluator.h"
-#include "error.h"
+
 int main(){
 	Eval eval;
-	string result = "7+9";
-	Error error(result);
-	eval.evaluate(result);
-	cout << result << endl;
+	cout << eval.evaluate("1/0") << endl; 
 	system("pause");
 	return 0;
 }
